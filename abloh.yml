@@ -1,0 +1,23 @@
+# abloh.yml - read from the PR merge base, so changes are reviewed like code.
+# Keys: https://abloh.dev/docs#config
+
+# % of mechanical breaks in changed lines your tests must catch.
+threshold: 70
+
+# true: below threshold fails the check. Blocks merges only if also marked
+# required in branch protection.
+enforce: true
+
+# The job in your own CI that Abloh's step rides. Abloh reads your workflows to
+# pick it and proves the choice by running there; change it to move the step.
+setup:
+  job: .github/workflows/nodejs.yml::build
+
+# Rebuild recipe for the proof container. Comments name the source file.
+environment:
+  runtimeImage: node:24.18.0-bookworm-slim@sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d # reviewed Node 24 image (your CI's own Node, and a .nvmrc would outrank it)
+  installDirectory: .
+  setup: .abloh/setup.sh # written by init and yours to edit. Every cold run executes it step by step
+  testCommand: corepack pnpm test # scripts.test in package.json
+  identityFiles: # a change here triggers reinstall instead of container reuse
+    - pnpm-workspace.yaml
