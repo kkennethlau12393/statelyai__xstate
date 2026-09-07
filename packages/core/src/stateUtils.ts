@@ -213,19 +213,16 @@ export function getCandidates<TEvent extends EventObject>(
   stateNode: StateNode<any, TEvent>,
   receivedEventType: TEvent['type']
 ): Array<TransitionDefinition<any, TEvent>> {
-  const exactMatch = stateNode.transitions.get(receivedEventType);
-  const wildcardCandidates = [...stateNode.transitions.keys()]
-    .filter(
-      (eventDescriptor) =>
-        eventDescriptor !== receivedEventType &&
+  const candidates =
+    stateNode.transitions.get(receivedEventType) ||
+    [...stateNode.transitions.keys()]
+      .filter((eventDescriptor) =>
         matchesEventDescriptor(receivedEventType, eventDescriptor)
-    )
-    .sort((a, b) => b.length - a.length)
-    .flatMap((key) => stateNode.transitions.get(key)!);
+      )
+      .sort((a, b) => b.length - a.length)
+      .flatMap((key) => stateNode.transitions.get(key)!);
 
-  return exactMatch
-    ? [...exactMatch, ...wildcardCandidates]
-    : wildcardCandidates;
+  return candidates;
 }
 
 /** All delayed transitions from the config. */
